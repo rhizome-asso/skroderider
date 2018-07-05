@@ -39,8 +39,9 @@ names = ['sunflower', 'tulip', 'forgetmenot', 'baobab']
 
 rider = Skroderider('sunflower')
 ret = rider.setup(SSID, PASSWORD, '192.168.1.163',6301) 
-print(ret)
-while True:
+if not ret:
+    print('connection unsuccessful')
+while True and ret:
 
     temp = get_temperature(temperature_pin)
     light = get_light(light_pin)

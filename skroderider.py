@@ -51,13 +51,17 @@ class Skroderider:
         return success
 
     def _prepare_udp(self):
-        nb = uart.write('AT+CIPSTART=0,"UDP","{ip}",{port}\r\n'.format(ip=self.ip, port=self.port))
+        nb = self.uart.write('AT+CIPMUX=1\r\n')
+        self.udp = self._scan_response()
+        if not self.udp:
+            return False
+        nb = self.uart.write('AT+CIPSTART=0,"UDP","{ip}",{port}\r\n'.format(ip=self.ip, port=self.port))
         self.udp = self._scan_response(ok='OK')
         return self.udp
 
     def setup(self, ssid, pwd, ip, port):
         if self.wifi and ssid == self.ssid:
-            if self.udp and ip = self.ip and port = self.port:
+            if self.udp and ip == self.ip and port == self.port:
                 return True
             else:
                 self.ip = ip
@@ -66,13 +70,17 @@ class Skroderider:
         else:
             self.ssid = ssid
             self.pwd = pwd
-            return self._connect_wifi()
+            self.ip = ip
+            self.port = port
+            self._connect_wifi()
+            self._prepare_udp()
+        return self.wifi and self.udp
 
     def send_data(self, light, temp, humidity):
         nname = len(self.name)
         nb_exp = 4 + 4 + 4 + 4 + 1 + nname
         nb = self.uart.write('AT+CIPSEND=0,{}\r\n'.format(nb_exp))
         data = struct.pack('4s3fB{}s'.format(nname),
-                           'DATA', light, temp, humidity, nname, name)
-        nb = uart.write(data)
+                           'DATA', light, temp, humidity, nname, self.name)
+        nb = self.uart.write(data)
         return self._scan_response()
