@@ -1,4 +1,4 @@
-import analogio
+﻿import analogio
 import board
 import digitalio
 import time
@@ -10,41 +10,23 @@ try:
 except ImportError:
     import ustruct as struct
 
-SSID='castleinthesky_2.4GHz'
-PASSWORD='OV8ieghaijah0vik'
-
-MAX_VAL = 65535
-
-light_pin = analogio.AnalogIn(board.A0)
-temperature_pin = analogio.AnalogIn(board.A1)
-humidity_pin = analogio.AnalogIn(board.A2)
-
-def get_temperature(temp_pin):
-    u_out = (temp_pin.value / float(MAX_VAL))*temp_pin.reference_voltage*1000.
-    temp = (u_out - 500.) / 10.
-    return temp
-
-def get_light(light_pin, u_in=3.3):
-    u_out = (light_pin.value / MAX_VAL)*light_pin.reference_voltage
-    pullup = 10000.
-    return pullup*(u_in - u_out)/u_out
-
-def get_humidity(humidity_pin):
-    u_out = (humidity_pin.value / float(MAX_VAL))*humidity_pin.reference_voltage*1000.
-    humidity = (u_out - 500.) / 10.
-    return humidity
+SSID='Medils'
+PASSWORD='1234561234'
 
 
-names = ['sunflower', 'tulip', 'forgetmenot', 'baobab']
+print('starting up')
+rider = Skroderider('test_new', debug=True)
+print('initialized')
 
-rider = Skroderider('sunflower')
-ret = rider.setup(SSID, PASSWORD, '192.168.1.163',6301) 
-if not ret:
-    print('connection unsuccessful')
-while True and ret:
+while True:
+    ret = rider.setup(SSID, PASSWORD, '192.168.20.175',6301)
+    if not ret:
+        print('connection unsuccessful')
+    else:
+        print('sending')
+        rider.send_data(1.0, 2.0, 3.0)
+        print('sent')
+        rider.disconnect()
+        print('disconnected')
+    time.sleep(10)
 
-    temp = get_temperature(temperature_pin)
-    light = get_light(light_pin)
-    humidity = get_humidity(humidity_pin)
-    rider.send_data(light, temp, humidity)
-    time.sleep(5)
