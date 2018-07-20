@@ -116,6 +116,15 @@ class Skroderider:
             self._prepare_udp()
         return self.wifi and self.udp
 
+    def reset(self):
+        nb = self.uart.write('AT+RST\r\n')
+        if self.debug:
+            success, answer = self._scan_response(ok='ready', debug=True)
+            print('DEBUG:',answer)
+        else:
+            success = self._scan_response(ok='ready')
+        return success
+
     def disconnect(self):
         if not self.wifi:
             return False
@@ -134,6 +143,7 @@ class Skroderider:
             print('DEBUG:',answer)
         else:
             success = self._scan_response(ok='DISCONNECT')
+        success = success and self.reset()
         if success:
             self.dot[0] = [0, 0, 255]
             time.sleep(0.3)
